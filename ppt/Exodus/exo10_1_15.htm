@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Autoplay and Auto-End</title>
+</head>
+<body>
+  <a>
+    https://www.youtube.com/watch?v=fyekjTqqFNE&ab_channel=ELTUBEE
+  </a>
+  <h3>Autoplay YouTube Video and Stop at 2*60s
+  </h3>
+  <div id="player"></div>
+
+  <script>
+    // Load YouTube IFrame API
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    var player;
+    var endTime = 2*60; // seconds
+    var checkInterval;
+
+    // Create the player
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '360',
+        width: '640',
+        videoId: 'fyekjTqqFNE',
+        playerVars: {
+          autoplay: 1,
+          mute: 0
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data == YT.PlayerState.PLAYING) {
+        checkInterval = setInterval(function () {
+          if (player.getCurrentTime() >= endTime) {
+            player.pauseVideo();
+            clearInterval(checkInterval);
+          }
+        }, 500);
+      }
+    }
+  </script>
+</body>
+</html>
