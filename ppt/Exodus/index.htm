@@ -34,8 +34,8 @@
 </head>
 
 <body>
-   <a href="https://wdingbox.github.io/accc_2025_pp/">website home</a>
-    <br>
+  <a href="https://wdingbox.github.io/accc_2025_pp/">website home</a>
+  <br>
   <h3>File List</h3>
   <div id="tableContainer"></div>
 
@@ -50,8 +50,14 @@
       th1.textContent = "Index";
       let th2 = document.createElement("th");
       th2.textContent = "File Name";
+      let th3 = document.createElement("th");
+      th3.textContent = "pdf file";
+      let th4 = document.createElement("th");
+      th4.textContent = "video player";
       header.appendChild(th1);
       header.appendChild(th2);
+      header.appendChild(th3);
+      header.appendChild(th4);
 
       // Fill table rows
       fileArray.forEach((file, index) => {
