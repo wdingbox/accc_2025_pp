@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>File Table with Links</title>
+  <style>
+    table {
+      width: 50%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th,
+    td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    a {
+      text-decoration: none;
+      color: blue;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+   <a href="https://wdingbox.github.io/accc_2025_pp/">website home</a>
+    <br>
+  <h3>File List</h3>
+  <div id="tableContainer"></div>
+
+  <script>
+    function generateFileTable(fileArray) {
+      // Create table
+      let table = document.createElement("table");
+
+      // Create header row
+      let header = table.insertRow();
+      let th1 = document.createElement("th");
+      th1.textContent = "Index";
+      let th2 = document.createElement("th");
+      th2.textContent = "File Name";
+      header.appendChild(th1);
+      header.appendChild(th2);
+
+      // Fill table rows
+      fileArray.forEach((file, index) => {
+        let row = table.insertRow();
+        let cell1 = row.insertCell(0);
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+        let cell4 = row.insertCell(3);
+
+        cell1.textContent = index + 1;
+
+        // Create clickable link
+        function get_link(sfile) {
+          let link = document.createElement("a");
+          link.href = sfile;       // file path or URL
+          link.textContent = sfile;
+          link.target = "_blank"; // opens in new tab
+          return link
+        }
+
+        cell2.appendChild(get_link(file + ".pptx"));
+        cell3.appendChild(get_link(file + ".pdf"));
+        cell4.appendChild(get_link(file + ".htm"));
+      });
+
+      return table;
+    }
+
+    // Example usage
+    const files = [
+      "exo10_1_15",
+      "exo10_16_32",
+      "document",
+      "notes"
+    ];
+    document.getElementById("tableContainer").appendChild(generateFileTable(files));
+  </script>
+</body>
+
+</html>
