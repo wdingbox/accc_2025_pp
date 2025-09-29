@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>YouTube Range Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      margin: 24px;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input[type="number"] {
+      width: 50px;
+      padding: 6px;
+    }
+
+    input[type="text"] {
+      width: 180px;
+      padding: 6px;
+    }
+
+    button {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    #player {
+      max-width: 800px;
+      aspect-ratio: 16/9;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>YouTube Start/End Time Player</h2>
+
+  <div class="row">
+    <label for="videoId">Video ID:</label>
+    <input id="videoId" type="text" value="icTIyg6uBnU" />
+    <label for="start">Start (s):</label>
+    <input id="start" type="number" min="0" step="0.1" title="start time" value="260" />
+    <label for="end">End (s):</label>
+    <input id="end" type="number" min="0" step="0.1" title="end time" value="2000" />
+    <button id="apply">Play Segment</button>
+    <label><input id="loop" type="checkbox" unchecked />Loop</label>
+  </div>
+  <div id="player"></div><br>
+  <a href="https://www.youtube.com/watch?v=icTIyg6uBnU
+">
+https://www.youtube.com/watch?v=icTIyg6uBnU
+</a>
+
+  <script>
+    // --- Config defaults ---
+    let player;
+    let poll = null;
+
+    // Load YouTube IFrame API
+    (function loadYT() {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
+    })();
+
+    // YouTube API callback (must be global)
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player("player", {
+        width: "100%",
+        height: "100%",
+        videoId: "fyekjTqqFNE", // default
+        playerVars: {
+          // UX niceties; important ones are autoplay/mute/playsinline
+          autoplay: 1,
+          mute: 1,
+          playsinline: 1,
+          controls: 1,
+          rel: 0,
+          modestbranding: 1,
+        },
+        events: {
+          onReady: onReady,
+          onStateChange: onStateChange,
+        },
+      });
+    }
+
+    function onReady() {
+      // Start with default inputs
+      playSegment();
+      document.getElementById("apply").addEventListener("click", playSegment);
+    }
+
+    function onStateChange(e) {
+      if (e.data === YT.PlayerState.PLAYING) {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    }
+
+    function playSegment() {
+      const id = document.getElementById("videoId").value.trim();
+      const start = parseFloat(document.getElementById("start").value);
+      const end = parseFloat(document.getElementById("end").value);
+      const shouldLoop = document.getElementById("loop").checked;
+
+      if (!id) {
+        alert("Please enter a YouTube video ID.");
+        return;
+      }
+      if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+        alert("End time must be greater than start time.");
+        return;
+      }
+
+      // Update video if needed
+      const current = player && player.getVideoData().video_id;
+      const sameVideo = current && current === id;
+
+      // Store desired segment on the player instance
+      player._segment = { start, end, loop: shouldLoop };
+
+      if (!sameVideo) {
+        // Load new video and jump to start
+        player.loadVideoById({
+          videoId: id,
+          startSeconds: start,
+        });
+      } else {
+        // Seek current video to start
+        player.seekTo(start, true);
+        player.playVideo();
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      poll = setInterval(() => {
+        if (!player || !player._segment) return;
+        const t = player.getCurrentTime();
+        const { start, end, loop } = player._segment;
+
+        if (t >= end) {
+          if (loop) {
+            // Seek a hair before start to ensure stable loop
+            player.seekTo(start, true);
+            player.playVideo();
+          } else {
+            player.pauseVideo();
+            stopPolling();
+          }
+        }
+      }, 100); // check 10x/sec for snappy stops
+    }
+
+    function stopPolling() {
+      if (poll) {
+        clearInterval(poll);
+        poll = null;
+      }
+    }
+  </script>
+</body>
+
+</html>
